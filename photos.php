@@ -182,15 +182,15 @@ try {
             <nav aria-label="Page navigation" class="mt-5 pt-3">
                 <ul class="pagination pagination-sm justify-content-center">
                     <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page - 1 ?>" style="color: var(--primary-dark);">이전</a>
+                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page - 1 ?>" style="color: var(--text-main);">이전</a>
                     </li>
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
-                            <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $i ?>" style="<?= ($page == $i) ? 'background-color: var(--primary-dark); border-color: var(--primary-dark);' : 'color: var(--primary-dark);' ?>"><?= $i ?></a>
+                            <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $i ?>" style="<?= ($page == $i) ? 'background-color: var(--text-main); border-color: var(--text-main);' : 'color: var(--text-main);' ?>"><?= $i ?></a>
                         </li>
                     <?php endfor; ?>
                     <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page + 1 ?>" style="color: var(--primary-dark);">다음</a>
+                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page + 1 ?>" style="color: var(--text-main);">다음</a>
                     </li>
                 </ul>
             </nav>

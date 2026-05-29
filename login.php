@@ -18,8 +18,8 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
     <style>
         /* 화면 전체를 다크 블루로 덮음 */
         body {
-            background-color: var(--primary-dark, #0d2b5b); 
-            background-image: radial-gradient(circle at top right, #1a4382, #0d2b5b);
+            background-color: #2C2A29;
+            background-image: radial-gradient(circle at top right, #4a4745, #1c1b1a);
             height: 100vh;
             display: flex;
             align-items: center;

@@ -2,9 +2,8 @@
 // 현재 접속 중인 파일명 가져오기 ('.php' 확장자 제외하고 이름만 추출)
 $currentPage = basename($_SERVER['PHP_SELF'], '.php');
 ?>
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow-sm" style="background-color: var(--primary-dark, #0d2b5b); padding: 1rem 0;">
-    <div class="container">
-        
+<nav class="navbar navbar-expand-lg navbar-custom shadow-sm" style="padding: 1rem 0;">
+        <div class="container">    
         <span class="navbar-brand fw-bold fs-4 m-0 d-flex align-items-center">
             <a href="/" style="color: inherit; text-decoration: none;">Skyremix Studio</a>
             <a href="login" class="secret-login-link" title="Admin Login" style="display:inline-block; width:8px; height:20px; text-decoration:none; cursor:pointer; margin-left:4px;"></a>

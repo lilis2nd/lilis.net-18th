@@ -55,7 +55,7 @@ try {
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(13, 43, 91, 0.08);
             padding: 25px;
-            border-left: 6px solid var(--primary-dark, #0d2b5b);
+            border-left: 6px solid var(--text-main);
             margin-top: 30px;
         }
         .exif-item {
