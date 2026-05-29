@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# 들어온 요청이 실제 디렉토리가 아닐 경우
+RewriteCond %{REQUEST_FILENAME} !-d
+# 들어온 요청이 실제 파일이 아닐 경우
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# .php 확장자를 내부적으로 붙여서 실행
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+

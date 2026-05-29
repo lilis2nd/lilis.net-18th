@@ -1,0 +1,233 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+@import url('https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;600;800&display=swap');
+
+/* --- 1. Color Variables (Warm Analog Theme) --- */
+:root {
+    --bg-primary: #FDFBF7;      /* 연한 크림 화이트 (종이 질감 배경) */
+    --bg-secondary: #F4F0E6;    /* 뉴트럴 베이지 (타일 및 보조 배경) */
+    --text-main: #2C2A29;       /* 따뜻한 차콜 (가독성 높은 메인 글자) */
+    --text-muted: #8E8A86;      /* 차분한 그레이 베이지 (보조 글자) */
+    --accent: #D4C5B9;          /* 부드러운 샌드 베이지 (포인트/라인) */
+    --white: #ffffff;
+    
+    --shadow-subtle: 0 4px 20px rgba(44, 42, 41, 0.05);
+    --radius: 12px;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-main);
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- 2. Navigation Bar --- */
+.navbar-custom {
+    background-color: var(--bg-primary) !important;
+    border-bottom: 1px solid var(--bg-secondary);
+    padding: 1.2rem 0;
+}
+
+.navbar-custom .navbar-brand {
+    color: var(--text-main) !important;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-family: 'Azeret Mono', monospace; /* 시크한 영문 포인트 폰트 */
+}
+
+.navbar-custom .nav-link {
+    color: var(--text-muted) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-custom .nav-link:hover,
+.navbar-custom .nav-link.active {
+    color: var(--text-main) !important;
+}
+
+/* 모바일 메뉴 버튼 색상 (어두운 차콜로 변경) */
+.navbar-toggler {
+    border-color: var(--accent);
+}
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%232C2A29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* --- 3. Home Photo Card (index.php) --- */
+.latest-photo-card {
+    border: 1px solid var(--bg-secondary);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-subtle);
+    overflow: hidden;
+    background-color: var(--white);
+}
+
+.latest-photo-img {
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+    background-color: #000000;
+}
+
+.metadata-box {
+    background-color: var(--bg-secondary);
+    color: var(--text-main);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    font-family: 'Azeret Mono', monospace;
+}
+
+.metadata-item {
+    margin-bottom: 5px;
+}
+
+/* --- 4. Tools TOC & Card (tools.php) --- */
+.custom-toc .nav-link {
+    color: var(--text-muted);
+    border-radius: 6px;
+    margin-bottom: 5px;
+    transition: all 0.2s ease;
+}
+
+.custom-toc .nav-link:hover {
+    background-color: var(--bg-secondary);
+    color: var(--text-main);
+}
+
+.custom-toc .nav-link.active {
+    background-color: var(--text-main);
+    color: var(--bg-primary);
+    font-weight: bold;
+}
+
+.tool-card {
+    border: 1px solid var(--bg-secondary);
+    border-radius: 10px;
+    background-color: var(--white);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-subtle);
+}
+
+/* --- 5. Photo Gallery Grid (photos.php 기존 설정) --- */
+.photo-gallery-card {
+    border: none;
+    background-color: transparent;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.photo-thumbnail {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-subtle);
+}
+
+.photo-gallery-card:hover .photo-thumbnail {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(44, 42, 41, 0.1);
+}
+
+.photo-title-sm {
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* --- 6. New Gallery Tile & Filter UI --- */
+.photo-container {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--bg-secondary);
+}
+
+.photo-overlay {
+    background: linear-gradient(0deg, rgba(44, 42, 41, 0.9) 0%, rgba(44, 42, 41, 0) 100%);
+}
+
+.overlay-title {
+    font-family: 'Azeret Mono', monospace;
+    font-weight: 600;
+}
+
+/* 필터 버튼 (Pill 버튼) */
+.btn-outline-dark {
+    border-color: var(--accent);
+    color: var(--text-muted);
+    border-width: 1.5px;
+}
+
+.btn-outline-dark:hover, .btn-dark {
+    background-color: var(--text-main);
+    border-color: var(--text-main);
+    color: var(--bg-primary);
+}
+
+/* --- 7. Admin Modals & Forms --- */
+.modal-content {
+    background-color: var(--bg-primary);
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--bg-secondary);
+}
+
+.form-control, .form-select {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--accent);
+    color: var(--text-main);
+    border-radius: 10px;
+}
+
+.form-control:focus {
+    background-color: var(--white);
+    border-color: var(--text-main);
+    box-shadow: none;
+}
+
+/* 라이트박스 캡션 */
+.lightbox-exif {
+    color: var(--accent);
+    font-family: 'Azeret Mono', monospace;
+    opacity: 0.9;
+}
+
+/* 페이지네이션 */
+.page-link {
+    background-color: transparent;
+    border: none;
+    color: var(--text-muted);
+    margin: 0 5px;
+    font-weight: 600;
+}
+
+.page-item.active .page-link {
+    background-color: var(--text-main) !important;
+    color: var(--bg-primary) !important;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
