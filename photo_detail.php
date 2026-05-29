@@ -80,11 +80,11 @@ if (!$photo) {
             <hr>
 
             <div class="mt-5">
-                <h4 style="color: var(--primary-dark); mb-4">Comments</h4>
+                <h4 style="color: var(--text-main); margin-bottom: 1.5rem;">Comments</h4>
                 
                 <div class="card mb-3 border-0" style="background-color: #fff;">
                     <div class="card-body">
-                        <h6 class="fw-bold" style="color: var(--primary-mint);">Visitor123 <span class="text-muted small fw-normal ms-2">2026-05-27 10:00</span></h6>
+                        <h6 class="fw-bold" style="color: var(--text-main);">Visitor123 <span class="text-muted small fw-normal ms-2">2026-05-27 10:00</span></h6>
                         <p class="card-text">사진 구도가 너무 아름답네요!</p>
                     </div>
                 </div>
@@ -100,7 +100,7 @@ if (!$photo) {
                                 <textarea class="form-control" name="content" rows="3" placeholder="댓글을 남겨주세요" required></textarea>
                             </div>
                             <div class="text-end">
-                                <button type="submit" class="btn" style="background-color: var(--primary-dark); color: #fff;">댓글 등록</button>
+                                <button type="submit" class="btn btn-dark">댓글 등록</button>
                             </div>
                         </form>
                     </div>

@@ -82,7 +82,7 @@ if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true
         /* 로그인 버튼 */
         .btn-login {
             background-color: #fff;
-            color: #0d2b5b;
+            color: var(--text-main, #2C2A29);;
             font-weight: 800;
             border-radius: 12px;
             padding: 14px;

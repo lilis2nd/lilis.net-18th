@@ -22,7 +22,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
         <div class="col-md-8">
             <div class="card shadow-sm" style="border-top: 4px solid var(--accent);">
                 <div class="card-body p-4">
-                    <h3 class="fw-bold mb-4" style="color: var(--primary-dark, #0d2b5b);">새 사진 업로드</h3>
+                    <h3 class="fw-bold mb-4">새 사진 업로드</h3>
                     <form action="upload_process.php" method="POST" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="title" class="form-label fw-semibold">사진 제목</label>
