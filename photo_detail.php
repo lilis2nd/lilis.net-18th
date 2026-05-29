@@ -57,7 +57,11 @@ if (!$photo) {
             <div class="metadata-box mb-5">
                 <div class="row">
                     <div class="col-md-4 metadata-item">
-                        <strong>업로드:</strong> <?= date('Y-m-d H:i', strtotime($photo['uploaded_at'])) ?>
+                        <?php if (!empty($photo['taken_at'])): ?>
+                            <strong>촬영일:</strong> <?= date('Y-m-d H:i', strtotime($photo['taken_at'])) ?>
+                        <?php else: ?>
+                            <strong>업로드:</strong> <?= date('Y-m-d H:i', strtotime($photo['uploaded_at'])) ?>
+                        <?php endif; ?>
                     </div>
                     <div class="col-md-4 metadata-item">
                         <strong>카메라:</strong> <?= htmlspecialchars($photo['camera_model'], ENT_QUOTES, 'UTF-8') ?>

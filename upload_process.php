@@ -64,6 +64,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
         }
     }
 
+    // --- [여기부터 수정] 촬영 날짜(DateTimeOriginal) 추출 및 MySQL 포맷 변환 ---
+    $takenAt = null;
+    if (!empty($exif['DateTimeOriginal'])) {
+        // EXIF 날짜 포맷(YYYY:MM:DD)을 PHP가 인식할 수 있게 변환
+        $dateStr = str_replace(':', '-', substr($exif['DateTimeOriginal'], 0, 10)) . substr($exif['DateTimeOriginal'], 10);
+        $takenAt = date('Y-m-d H:i:s', strtotime($dateStr));
+    } elseif (!empty($exif['DateTime'])) {
+        $dateStr = str_replace(':', '-', substr($exif['DateTime'], 0, 10)) . substr($exif['DateTime'], 10);
+        $takenAt = date('Y-m-d H:i:s', strtotime($dateStr));
+    }
+    // --- [여기까지] ---
+
+    // S3 업로드 시 사용할 기본 MIME 타입 설정
+    $mimeType = mime_content_type($tmpPath);
+
     // S3 업로드 시 사용할 기본 MIME 타입 설정
     $mimeType = mime_content_type($tmpPath);
 
@@ -136,9 +151,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
 
         $imageUrl = $result->get('ObjectURL');
 
-        // 4. DB에 사진 정보 및 추출한 EXIF 데이터 저장
-        $sql = "INSERT INTO photos (title, s3_url, camera_model, aperture, shutter_speed, iso, focal_length, category) 
-                VALUES (:title, :s3_url, :model, :aperture, :shutter, :iso, :focal, :category)";
+        // 4. DB에 사진 정보 및 추출한 EXIF 데이터 저장 (taken_at 추가)
+        $sql = "INSERT INTO photos (title, s3_url, camera_model, aperture, shutter_speed, iso, focal_length, category, taken_at) 
+                VALUES (:title, :s3_url, :model, :aperture, :shutter, :iso, :focal, :category, :taken_at)";
         
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
@@ -149,7 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
             ':shutter'  => $shutterSpeed,
             ':iso'      => $iso,
             ':focal'    => $focalLength,
-            ':category' => $category // [추가됨]
+            ':category' => $category,
+            ':taken_at' => $takenAt // 촬영 날짜 바인딩
         ]);
 
         // 5. 성공 시 갤러리 메인으로 이동

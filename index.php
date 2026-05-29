@@ -162,8 +162,11 @@ try {
                             </div>
 
                             <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">Uploaded</span>
-                                <div class="exif-value"><span class="icon">📅</span> <?= date('Y.m.d', strtotime($photo['uploaded_at'])) ?></div>
+                                <span class="exif-label"><?= !empty($photo['taken_at']) ? 'Shot Date' : 'Uploaded' ?></span>
+                                <div class="exif-value">
+                                    <span class="icon">📅</span> 
+                                    <?= !empty($photo['taken_at']) ? date('Y.m.d', strtotime($photo['taken_at'])) : date('Y.m.d', strtotime($photo['uploaded_at'])) ?>
+                                </div>
                             </div>
                         </div>
                     </div> <div class="text-center mt-5">

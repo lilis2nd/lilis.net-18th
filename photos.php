@@ -131,12 +131,21 @@ try {
                         <?php
                             // EXIF 데이터 가공 (반올림 및 결합)
                             $focalFormatted = !empty($photo['focal_length']) ? round(floatval($photo['focal_length']), 1) . 'mm' : '';
+
                             $exifDetails = [];
                             if (!empty($photo['camera_model'])) $exifDetails[] = "📷 " . $photo['camera_model'];
                             if (!empty($focalFormatted)) $exifDetails[] = $focalFormatted;
                             if (!empty($photo['aperture'])) $exifDetails[] = $photo['aperture'];
                             if (!empty($photo['shutter_speed'])) $exifDetails[] = $photo['shutter_speed'] . "s";
                             if (!empty($photo['iso'])) $exifDetails[] = "ISO " . $photo['iso'];
+                            
+                            // 라이트박스용 날짜 추가 (촬영일 우선, 없으면 업로드일)
+                            if (!empty($photo['taken_at'])) {
+                                $exifDetails[] = "📅 " . date('Y.m.d', strtotime($photo['taken_at']));
+                            } else {
+                                $exifDetails[] = "📅 " . date('Y.m.d', strtotime($photo['uploaded_at']));
+                            }
+                            
                             $exifString = implode('   |   ', $exifDetails);
                         ?>
                         <div class="photo-container" 
@@ -148,7 +157,7 @@ try {
                              data-shutter="<?= htmlspecialchars($photo['shutter_speed']) ?>"
                              data-iso="<?= htmlspecialchars($photo['iso']) ?>"
                              data-focal="<?= htmlspecialchars($photo['focal_length']) ?>"
-                             data-exif=""
+                             data-exif="<?= htmlspecialchars($exifString) ?>"
                              data-category="<?= htmlspecialchars($photo['category'] ?? 'General') ?>">
                             
                             <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
