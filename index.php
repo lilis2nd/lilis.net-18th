@@ -28,7 +28,6 @@ try {
         body {
             display: flex;
             flex-direction: column;
-            background-color: #f4f7f6;
         }
         .content-wrapper {
             flex: 1 0 auto;
