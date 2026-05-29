@@ -104,7 +104,7 @@ try {
         <?php if (!$photo): ?>
             <div class="row justify-content-center py-5">
                 <div class="col-md-8 text-center">
-                    <h2 class="fw-bold mb-3" style="color: var(--primary-dark, #0d2b5b);">Welcome to Skyremix Studio</h2>
+                    <h2 class="fw-bold mb-3">Welcome to Skyremix Studio</h2>
                     <p class="text-muted fs-5 mb-4">아직 등록된 작품이 없습니다. 사진을 업로드해 갤러리를 채워보세요!</p>
                     <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
                         <a href="upload.php" class="btn btn-primary shadow-sm fw-bold px-4 py-2">첫 사진 올리러 가기</a>
@@ -117,7 +117,7 @@ try {
                     
                     <div class="text-center mb-4">
                         <span class="badge bg-secondary mb-2" style="letter-spacing: 1px; font-size: 0.75rem; padding: 5px 10px;">LATEST WORK</span>
-                        <h1 class="fw-bold display-5 mb-2" style="color: var(--primary-dark, #0d2b5b); letter-spacing: -1px;"><?= htmlspecialchars($photo['title']) ?></h1>
+                        <h1 class="fw-bold display-5 mb-2" style="letter-spacing: -1px;"><?= htmlspecialchars($photo['title']) ?></h1>
                     </div>
 
                     <div class="featured-img-container mb-4">
@@ -125,7 +125,7 @@ try {
                     </div>
 
                     <div class="exif-info-box">
-                        <h5 class="fw-bold mb-4" style="color: var(--primary-dark, #0d2b5b); letter-spacing: -0.5px;">Camera Details</h5>
+                        <h5 class="fw-bold mb-4" style="letter-spacing: -0.5px;">Camera Details</h5>
                         
                         <div class="row">
                             <div class="col-6 col-md-4 exif-item">

@@ -51,7 +51,7 @@ try {
     <link href="css/style.css" rel="stylesheet">
     <style>
         html, body { height: 100%; margin: 0; }
-        body { display: flex; flex-direction: column; background-color: #f4f7f6; }
+        body { display: flex; flex-direction: column; }
         .content-wrapper { flex: 1 0 auto; }
         .gallery-grid .col { padding: 8px; }
         .photo-container {
@@ -104,10 +104,10 @@ try {
 
     <div class="container mt-5 mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold fs-1" style="color: var(--primary-dark, #0d2b5b); letter-spacing: -1px;">Gallery</h2>
+            <h2 class="fw-bold fs-1" style="letter-spacing: -1px;">Gallery</h2>
             <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
                 <div>
-                    <a href="upload" class="btn btn-sm me-2 shadow-sm" style="background-color: var(--accent-pink, #ff6b6b); color: #fff; font-weight: bold; border-radius: 30px; padding: 6px 15px;">사진 추가+</a>
+                    <a href="upload" class="btn btn-dark btn-sm me-2 shadow-sm" style="font-weight: bold; border-radius: 30px; padding: 6px 15px;">사진 추가+</a>
                     <a href="logout" class="btn btn-sm btn-outline-secondary shadow-sm" style="border-radius: 30px; padding: 6px 15px;">관리자 로그아웃</a>
                 </div>
             <?php endif; ?>

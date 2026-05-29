@@ -50,7 +50,7 @@ if (!$photo) {
                  alt="<?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?>">
             
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 style="color: var(--primary-dark);"><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+                <h2><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?></h2>
                 <button class="btn btn-sm btn-danger">삭제</button>
             </div>
 

@@ -20,7 +20,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-sm" style="border-top: 4px solid var(--primary-mint, #20c997);">
+            <div class="card shadow-sm" style="border-top: 4px solid var(--accent);">
                 <div class="card-body p-4">
                     <h3 class="fw-bold mb-4" style="color: var(--primary-dark, #0d2b5b);">새 사진 업로드</h3>
                     <form action="upload_process.php" method="POST" enctype="multipart/form-data">
@@ -44,8 +44,8 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
                             <div class="form-text mt-2">아이폰의 HEIC 파일은 서버에서 자동으로 JPG로 변환됩니다.</div>
                         </div>
                         <div class="d-flex justify-content-between">
-                            <a href="photos.php" class="btn btn-outline-secondary">취소</a>
-                            <button type="submit" class="btn shadow-sm" style="background-color: var(--primary-dark, #0d2b5b); color: white;">S3에 업로드 및 저장</button>
+                            <a href="photos.php" class="btn btn-outline-secondary">CANCEL</a>
+                            <button type="submit" class="btn btn-dark shadow-sm">UPLOAD</button>
                         </div>
                     </form>
                 </div>
