@@ -27,7 +27,8 @@
             font-family: 'Azeret Mono', monospace;
             font-weight: 600;
             color: var(--text-main);
-            flex: 0 0 135px; /* 글자 길이에 상관없이 무조건 135px로 칸 너비 고정 */
+            flex: 0 0 170px; /* 너비 확장 */
+            white-space: nowrap; /* 줄바꿈 원천 차단 */
             font-size: 0.9rem;
         }
         .timeline-desc {
@@ -35,6 +36,7 @@
             font-size: 0.9rem;
             line-height: 1.6;
             flex: 1; /* 나머지 빈 공간은 설명글이 가지도록 설정 */
+            word-break: keep-all; /* 한글 단어 단위로 예쁘게 줄바꿈 */
         }
         .intro-box {
             background-color: var(--white);
@@ -88,7 +90,7 @@
                         
                         <div class="timeline-row">
                             <div class="timeline-year">2001 - 2026</div>
-                            <div class="timeline-desc">Skyremix Studio 운영</div>
+                            <div class="timeline-desc">Skyremix Studio 운영 (though lazy&hellip;)</div>
                         </div>
                         <div class="timeline-row">
                             <div class="timeline-year">2000</div>
@@ -99,7 +101,7 @@
                     <div class="col-md-6 timeline-section">
                         <span class="timeline-title text-uppercase">02 / Life & Career</span>
                          <div class="timeline-row">
-                            <div class="timeline-year">2025.12.15.</div>
+                            <div class="timeline-year">2025.12.15. - &infin;</div>
                             <div class="timeline-desc">두 아이의 아버지</div>
                         </div>                       
                         <div class="timeline-row">
@@ -107,7 +109,7 @@
                             <div class="timeline-desc">Product Planner</div>
                         </div>
                         <div class="timeline-row">
-                            <div class="timeline-year">2018.04.07.</div>
+                            <div class="timeline-year">2018.04.07. - &infin;</div>
                             <div class="timeline-desc">한 사람의 배우자이자 단짝</div>
                         </div>  
                         <div class="timeline-row">

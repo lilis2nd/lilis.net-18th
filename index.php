@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once 'db_connect.php';
-require_once 'config.php'; // 공통 설정 파일 (SITE_TITLE 사용)
+require_once 'config.php';
 
 // 메인 화면에 보여줄 가장 최신 사진 1장 가져오기
 try {
@@ -23,7 +23,6 @@ try {
     <meta property="og:image" content="https://lilis.net/og-image.jpg"> <meta property="og:url" content="https://lilis.net">
     <?php include 'common_head.php'; ?>
     <style>
-        /* 푸터 바닥 고정을 위한 레이아웃 설정 */
         html, body {
             height: 100%;
             margin: 0;
@@ -36,56 +35,54 @@ try {
             flex: 1 0 auto;
         }
         
-        /* 메인 피처드 이미지 스타일 */
+        /* 갤러리 액자 같은 메인 이미지 */
         .featured-img-container {
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
             background-color: #000;
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .featured-img-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
         }
         .featured-img {
             width: 100%;
-            max-height: 70vh;
+            max-height: 75vh; /* 사진이 너무 커서 잘리지 않게 최대 높이 조정 */
             object-fit: contain;
             display: block;
             margin: 0 auto;
         }
 
-        /* 세련된 EXIF 인포 박스 스타일 */
-        .exif-info-box {
-            background-color: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(13, 43, 91, 0.08);
-            padding: 25px;
-            border-left: 6px solid var(--text-main);
-            margin-top: 30px;
+        /* 💡 모던한 타이틀 스타일 영역 */
+        .modern-title-box {
+            margin-top: 3rem;
+            text-align: center;
         }
-        .exif-item {
-            margin-bottom: 20px;
+        .modern-title {
+            font-family: 'Azeret Mono', monospace;
+            font-weight: 800;
+            font-size: 2.5rem;
+            letter-spacing: -2px;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
         }
-        .exif-label {
-            font-size: 0.75rem;
-            color: #888;
+        .title-divider {
+            width: 40px;
+            height: 3px;
+            background-color: var(--accent);
+            margin: 1.5rem auto;
+            border-radius: 2px;
+        }
+        .title-meta {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            display: block;
-            margin-bottom: 4px;
             font-weight: 600;
         }
-        .exif-value {
-            font-size: 1rem;
-            font-weight: 700;
-            color: #222;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .exif-value span.icon {
-            font-size: 1.2rem;
-            opacity: 0.8;
-        }
         
-        /* 비밀 로그인 링크용 스타일 (navbar.php 연동) */
         .secret-login-link {
             display: inline-block;
             width: 8px;
@@ -116,67 +113,25 @@ try {
         <?php else: ?>
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    
-                    <div class="text-center mb-4">
-                        <span class="badge bg-secondary mb-2" style="letter-spacing: 1px; font-size: 0.75rem; padding: 5px 10px;">LATEST WORK</span>
-                        <h1 class="fw-bold display-5 mb-2" style="letter-spacing: -1px;"><?= htmlspecialchars($photo['title']) ?></h1>
-                    </div>
 
-                    <div class="featured-img-container mb-4">
+                    <div class="featured-img-container">
                         <a href="photo_detail?id=<?= $photo['id'] ?>" style="display: block; text-decoration: none;">
                             <img src="<?= htmlspecialchars($photo['s3_url']) ?>" class="featured-img" alt="<?= htmlspecialchars($photo['title']) ?>">
                         </a>
                     </div>
 
-                    <div class="exif-info-box">
-                        <div class="row">
-                        
-                        <div class="row">
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">Camera</span>
-                                <div class="exif-value"><span class="icon">📷</span> <?= htmlspecialchars($photo['camera_model']) ?: 'Unknown' ?></div>
-                            </div>
-                            
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">Aperture</span>
-                                <div class="exif-value"><span class="icon">⭕</span> <?= htmlspecialchars($photo['aperture']) ?: '-' ?></div>
-                            </div>
-                            
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">Shutter</span>
-                                <div class="exif-value"><span class="icon">⏱️</span> <?= htmlspecialchars($photo['shutter_speed']) ? htmlspecialchars($photo['shutter_speed']) . 's' : '-' ?></div>
-                            </div>
-                            
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">ISO</span>
-                                <div class="exif-value"><span class="icon">☀️</span> <?= htmlspecialchars($photo['iso']) ?: '-' ?></div>
-                            </div>
-                            
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label">Focal Length</span>
-                                <div class="exif-value">
-                                    <span class="icon">🎯</span> 
-                                    <?php 
-                                        if (!empty($photo['focal_length'])) {
-                                            echo round(floatval($photo['focal_length']), 1) . 'mm'; 
-                                        } else {
-                                            echo '-';
-                                        }
-                                    ?>
-                                </div>
-                            </div>
-
-                            <div class="col-6 col-md-4 exif-item">
-                                <span class="exif-label"><?= !empty($photo['taken_at']) ? 'Shot Date' : 'Uploaded' ?></span>
-                                <div class="exif-value">
-                                    <span class="icon">📅</span> 
-                                    <?= !empty($photo['taken_at']) ? date('Y.m.d', strtotime($photo['taken_at'])) : date('Y.m.d', strtotime($photo['uploaded_at'])) ?>
-                                </div>
-                            </div>
+                    <div class="modern-title-box">
+                        <h1 class="modern-title"><?= htmlspecialchars($photo['title']) ?></h1>
+                        <div class="title-divider"></div>
+                        <div class="title-meta">
+                            LATEST WORK &nbsp;&middot;&nbsp; 
+                            <?= !empty($photo['taken_at']) ? date('Y', strtotime($photo['taken_at'])) : date('Y', strtotime($photo['uploaded_at'])) ?>
                         </div>
-                    </div> <div class="text-center mt-5">
-                        <a href="photos" class="btn btn-outline-dark fw-bold px-4 py-2 shadow-sm" style="border-radius: 30px;">
-                            View Full Gallery →
+                    </div>
+
+                    <div class="text-center mt-5 pt-3">
+                        <a href="photos" class="btn btn-outline-dark fw-bold px-5 py-2 shadow-sm" style="border-radius: 30px; letter-spacing: 1px;">
+                            Enter Gallery &rarr;
                         </a>
                     </div>
 
@@ -185,7 +140,9 @@ try {
         <?php endif; ?>
     </div>
 
-</div> <?php include 'footer.php'; ?>
+</div> 
+
+<?php include 'footer.php'; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
