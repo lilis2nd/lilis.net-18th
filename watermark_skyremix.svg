@@ -1,0 +1,59 @@
+<svg width="500" height="180" viewBox="0 0 500 180" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Sunrise -->
+  <path d="M225 40 A25 25 0 0 1 275 40"
+        fill="none"
+        stroke="white"
+        stroke-width="2.5"/>
+
+  <!-- Horizon -->
+  <line x1="160" y1="40" x2="340" y2="40"
+        stroke="white"
+        stroke-width="2"/>
+
+  <!-- Reflection -->
+  <line x1="230" y1="55" x2="270" y2="55"
+        stroke="white"
+        stroke-width="1.2"
+        opacity="0.7"/>
+
+  <!-- SKYREMIX -->
+  <text
+    x="250"
+    y="95"
+    text-anchor="middle"
+    font-family="Inter, Helvetica, Arial, sans-serif"
+    font-size="28"
+    font-weight="500"
+    letter-spacing="4"
+    fill="white">
+    SKYREMIX
+  </text>
+
+  <!-- STUDIO -->
+  <text
+    x="250"
+    y="125"
+    text-anchor="middle"
+    font-family="Inter, Helvetica, Arial, sans-serif"
+    font-size="11"
+    letter-spacing="8"
+    fill="white"
+    opacity="0.9">
+    STUDIO
+  </text>
+
+  <!-- LILIS -->
+  <text
+    x="250"
+    y="155"
+    text-anchor="middle"
+    font-family="Inter, Helvetica, Arial, sans-serif"
+    font-size="11"
+    letter-spacing="10"
+    fill="white"
+    opacity="0.75">
+    LILIS
+  </text>
+
+</svg>

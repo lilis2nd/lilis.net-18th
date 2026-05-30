@@ -24,9 +24,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['id'])) {
         if ($photo) {
             $s3Url = $photo['s3_url'];
             
-            // S3 URL에서 객체 키(Key) 추출하기 (예: /uploads/img_123.jpg -> uploads/img_123.jpg)
-            $parsedUrl = parse_url($s3Url, PHP_URL_PATH);
-            $s3Key = ltrim($parsedUrl, '/');
+            // 💡 [수정] 어떤 형태의 S3 URL이든 정확하게 'uploads/...' 키 값만 추출하도록 변경
+            $keyPosition = strpos($s3Url, 'uploads/');
+            if ($keyPosition !== false) {
+                $s3Key = substr($s3Url, $keyPosition);
+            } else {
+                $parsedUrl = parse_url($s3Url, PHP_URL_PATH);
+                $s3Key = ltrim($parsedUrl, '/');
+            }
 
             // 3. AWS S3에서 실제 파일 삭제
             $s3 = new S3Client([

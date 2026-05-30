@@ -61,13 +61,16 @@ try {
             text-align: center;
         }
         .modern-title {
-            font-family: 'Azeret Mono', monospace;
+            /* 💡 수정됨: Azeret Mono 뒤에 Pretendard를 예비(백업) 폰트로 추가 */
+            font-family: 'Azeret Mono', 'Pretendard', sans-serif; 
             font-weight: 800;
             font-size: 2.5rem;
             letter-spacing: -2px;
             color: var(--text-main);
             margin-bottom: 0.5rem;
+            word-break: keep-all; /* 한글 텍스트가 단어 중간에 끊기지 않도록 추가 */
         }
+        
         .title-divider {
             width: 40px;
             height: 3px;

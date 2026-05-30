@@ -149,7 +149,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
             'ContentType' => $mimeType, // webp로 업데이트된 MIME 타입 적용
         ]);
 
-        $imageUrl = $result->get('ObjectURL');
+        // 💡 [수정] CloudFront 주소가 있으면 CDN 주소로 조립, 없으면 기존 S3 주소 사용
+        $cf_domain = $_ENV['CLOUDFRONT_URL'] ?? '';
+        if (!empty($cf_domain)) {
+            $imageUrl = rtrim($cf_domain, '/') . '/uploads/' . $newFileName;
+        } else {
+            $imageUrl = $result->get('ObjectURL');
+        }
 
         // 4. DB에 사진 정보 및 추출한 EXIF 데이터 저장 (taken_at 추가)
         $sql = "INSERT INTO photos (title, s3_url, camera_model, aperture, shutter_speed, iso, focal_length, category, taken_at) 
