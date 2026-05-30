@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // 세션 탈취 방지를 위해 세션 ID 재발급
             session_regenerate_id(true);
 
-            // 메인 화면으로 이동
-            header('Location: index');
+            // 갤러리 화면으로 이동
+            header('Location: photos');
             exit;
         } else {
             // 로그인 실패

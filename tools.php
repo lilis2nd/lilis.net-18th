@@ -6,6 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= SITE_TITLE ?> | Web Tools</title>
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Skyremix Studio | Web Tools">
+    <meta property="og:description" content="일상의 불편함을 해결하기 위해 직접 기획하고 개발한 웹 프로그램들입니다.">
+    <meta property="og:image" content="https://lilis.net/og-image.jpg">
+    <meta property="og:url" content="https://lilis.net/tools">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <style>

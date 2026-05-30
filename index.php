@@ -17,6 +17,11 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo SITE_TITLE; ?></title>
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Skyremix Studio">
+    <meta property="og:description" content="두 개의 시선, 하나의 기록. Lilis의 사진 갤러리 및 웹 포트폴리오입니다.">
+    <meta property="og:image" content="https://lilis.net/og-image.jpg"> <meta property="og:url" content="https://lilis.net">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <style>
@@ -120,11 +125,13 @@ try {
                     </div>
 
                     <div class="featured-img-container mb-4">
-                        <img src="<?= htmlspecialchars($photo['s3_url']) ?>" class="featured-img" alt="<?= htmlspecialchars($photo['title']) ?>">
+                        <a href="photo_detail?id=<?= $photo['id'] ?>" style="display: block; text-decoration: none;">
+                            <img src="<?= htmlspecialchars($photo['s3_url']) ?>" class="featured-img" alt="<?= htmlspecialchars($photo['title']) ?>">
+                        </a>
                     </div>
 
                     <div class="exif-info-box">
-                        <h5 class="fw-bold mb-4" style="letter-spacing: -0.5px;">Camera Details</h5>
+                        <div class="row">
                         
                         <div class="row">
                             <div class="col-6 col-md-4 exif-item">

@@ -1,11 +1,12 @@
+ErrorDocument 404 /404.php
+
 RewriteEngine On
 
-# 들어온 요청이 실제 디렉토리가 아닐 경우
+# 1. 들어온 요청이 실제 디렉토리가 아닐 경우
 RewriteCond %{REQUEST_FILENAME} !-d
-# 들어온 요청이 실제 파일이 아닐 경우
-RewriteCond %{REQUEST_FILENAME} !-f
-
-# .php 확장자를 내부적으로 붙여서 실행
-RewriteRule ^([^\.]+)$ $1.php [NC,L]
+# 2. 💡 [추가된 핵심 코드] 뒤에 .php를 붙였을 때 그 파일이 실제로 존재하는 경우에만!
+RewriteCond %{REQUEST_FILENAME}.php -f
+# 3. .php를 내부적으로 붙여서 실행
+RewriteRule ^(.*)$ $1.php [NC,L]
 
 

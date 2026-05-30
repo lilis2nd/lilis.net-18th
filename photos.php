@@ -46,7 +46,14 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo SITE_TITLE; ?> | Gallery</title>
+    <title><?= SITE_TITLE ?> | Gallery</title>
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Skyremix Studio">
+    <meta property="og:description" content="두 개의 시선, 하나의 기록. Lilis의 사진 갤러리 및 웹 포트폴리오입니다.">
+    <meta property="og:image" content="https://lilis.net/og-image.jpg">
+    <meta property="og:url" content="https://lilis.net/photos">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet">
     <style>
@@ -54,13 +61,36 @@ try {
         body { display: flex; flex-direction: column; }
         .content-wrapper { flex: 1 0 auto; }
         .gallery-grid .col { padding: 8px; }
+        
         .photo-container {
             position: relative; border-radius: 10px; overflow: hidden;
             box-shadow: 0 4px 10px rgba(13, 43, 91, 0.08); transition: all 0.3s ease-in-out;
             cursor: zoom-in; background-color: #000;
         }
+
+        /* 💡 1. Skeleton UI 애니메이션 배경 설정 */
+        .photo-container.skeleton {
+            background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--accent) 50%, var(--bg-secondary) 75%);
+            background-size: 200% 100%;
+            animation: skeletonPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes skeletonPulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 💡 2. 이미지는 처음엔 투명(opacity: 0)하게 숨겨둠 */
+        .photo-img { 
+            width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; 
+            opacity: 0; 
+            transition: opacity 0.8s ease-out, transform 0.5s ease; 
+        }
+        /* 💡 3. 로딩이 끝나면 투명도를 1로 올려서 스르륵 나타나게 함 */
+        .photo-img.loaded { 
+            opacity: 1; 
+        }
+        
         .photo-container:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px rgba(13, 43, 91, 0.15); }
-        .photo-img { width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; transition: transform 0.5s ease; }
         .photo-container:hover .photo-img { transform: scale(1.1); }
         .photo-overlay {
             position: absolute; bottom: 0; left: 0; width: 100%; padding: 15px;
@@ -73,7 +103,6 @@ try {
         .exif-badge-group { display: flex; flex-wrap: wrap; gap: 4px; }
         .exif-badge { font-size: 0.7rem; color: #fff; background-color: rgba(255,255,255,0.15); padding: 3px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
         
-        /* Subtle 관리자 버튼들 스타일 */
         .subtle-delete-btn { position: absolute; top: 10px; right: 10px; padding: 2px 7px; font-size: 0.7rem; opacity: 0; z-index: 3; transition: opacity 0.3s ease; }
         .subtle-edit-btn { position: absolute; top: 10px; left: 10px; padding: 4px 8px; font-size: 0.7rem; opacity: 0; z-index: 3; transition: opacity 0.3s ease; }
         .photo-container:hover .subtle-delete-btn, .photo-container:hover .subtle-edit-btn { opacity: 1; }
@@ -81,7 +110,6 @@ try {
         .modal-backdrop.show { opacity: 0.95; }
         .lightbox-exif { font-size: 0.85rem; color: #ccc; margin-top: 5px; letter-spacing: 0.5px; }
         
-        /* 라이트박스 내비게이션 버튼 */
         .lightbox-nav-btn {
             position: absolute; top: 50%; transform: translateY(-50%);
             background: rgba(0, 0, 0, 0.3); border: none; color: white;
@@ -104,7 +132,7 @@ try {
 
     <div class="container mt-5 mb-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold fs-1" style="letter-spacing: -1px;">Gallery</h2>
+            <h2 class="fw-bold fs-1" style="color: var(--text-main); letter-spacing: -1px;">Gallery</h2>
             <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
                 <div>
                     <a href="upload" class="btn btn-dark btn-sm me-2 shadow-sm" style="font-weight: bold; border-radius: 30px; padding: 6px 15px;">사진 추가+</a>
@@ -129,7 +157,6 @@ try {
                 <?php foreach ($photos as $photo): ?>
                     <div class="col">
                         <?php
-                            // EXIF 데이터 가공 (반올림 및 결합)
                             $focalFormatted = !empty($photo['focal_length']) ? round(floatval($photo['focal_length']), 1) . 'mm' : '';
 
                             $exifDetails = [];
@@ -139,7 +166,6 @@ try {
                             if (!empty($photo['shutter_speed'])) $exifDetails[] = $photo['shutter_speed'] . "s";
                             if (!empty($photo['iso'])) $exifDetails[] = "ISO " . $photo['iso'];
                             
-                            // 라이트박스용 날짜 추가 (촬영일 우선, 없으면 업로드일)
                             if (!empty($photo['taken_at'])) {
                                 $exifDetails[] = "📅 " . date('Y.m.d', strtotime($photo['taken_at']));
                             } else {
@@ -148,7 +174,7 @@ try {
                             
                             $exifString = implode('   |   ', $exifDetails);
                         ?>
-                        <div class="photo-container" 
+                        <div class="photo-container skeleton" 
                              data-id="<?= $photo['id'] ?>"
                              data-img="<?= htmlspecialchars($photo['s3_url']) ?>" 
                              data-title="<?= htmlspecialchars($photo['title']) ?>"
@@ -169,7 +195,11 @@ try {
                                 </form>
                             <?php endif; ?>
 
-                            <img src="<?= htmlspecialchars($photo['s3_url']) ?>" class="photo-img" alt="<?= htmlspecialchars($photo['title']) ?>" loading="lazy">
+                            <img src="<?= htmlspecialchars($photo['s3_url']) ?>" 
+                                 class="photo-img" 
+                                 alt="<?= htmlspecialchars($photo['title']) ?>" 
+                                 loading="lazy"
+                                 onload="this.classList.add('loaded'); this.closest('.photo-container').classList.remove('skeleton');">
                             
                             <div class="photo-overlay">
                                 <h5 class="overlay-title"><?= htmlspecialchars($photo['title']) ?></h5>
@@ -219,7 +249,10 @@ try {
         <img src="" id="lightboxImage" class="img-fluid rounded shadow" alt="Enlarged Photo" style="max-height: 80vh; object-fit: contain;">
         <div class="mt-3">
             <div id="lightboxCaption" class="text-white fw-bold fs-5"></div>
-            <div id="lightboxExif" class="lightbox-exif"></div>
+            <div id="lightboxExif" class="lightbox-exif mb-2"></div>
+            <a href="#" id="lightboxDetailLink" class="btn btn-sm btn-outline-light rounded-pill px-3 mt-2" style="font-family: 'Azeret Mono', monospace; font-size: 0.85rem;">
+                View Details & Comments &rarr;
+            </a>
         </div>
       </div>
     </div>
@@ -297,6 +330,7 @@ try {
         const lightboxImage = document.getElementById('lightboxImage');
         const lightboxCaption = document.getElementById('lightboxCaption');
         const lightboxExif = document.getElementById('lightboxExif');
+        const lightboxDetailLink = document.getElementById('lightboxDetailLink');
         
         let currentIndex = 0;
         let isModalOpen = false;
@@ -313,11 +347,12 @@ try {
             lightboxImage.src = container.getAttribute('data-img');
             lightboxCaption.textContent = container.getAttribute('data-title');
             lightboxExif.textContent = container.getAttribute('data-exif');
+            
+            lightboxDetailLink.href = 'photo_detail?id=' + container.getAttribute('data-id');
         }
 
         photoContainers.forEach((container, index) => {
             container.addEventListener('click', function(e) {
-                // 관리자 액션 폼(수정/삭제)을 클릭했을 때는 라이트박스 띄우지 않음
                 if(e.target.closest('.delete-form') || e.target.closest('.edit-action-trigger')) return;
                 updateLightbox(index);
                 lightboxModal.show();
@@ -333,7 +368,6 @@ try {
             if (e.key === 'ArrowRight') updateLightbox(currentIndex + 1);
         });
 
-        // 모바일 터치 스와이프 기능
         let touchstartX = 0; let touchendX = 0;
         lightboxModalEl.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX);
         lightboxModalEl.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
@@ -343,13 +377,11 @@ try {
             if (touchendX - touchstartX > threshold) updateLightbox(currentIndex - 1);
         }
 
-        // --- 관리자 데이터 수정 로직 (비동기 AJAX) ---
         const editModalEl = document.getElementById('editModal');
         if (editModalEl) {
             const editModal = new bootstrap.Modal(editModalEl);
             const editForm = document.getElementById('editForm');
 
-            // 1. 폼에 기존 정보 채우기
             document.querySelectorAll('.edit-action-trigger').forEach(btn => {
                 btn.addEventListener('click', function() {
                     const container = this.closest('.photo-container');
@@ -366,7 +398,6 @@ try {
                 });
             });
 
-            // 2. 폼 제출 및 페이지 갱신
             editForm.addEventListener('submit', function(e) {
                 e.preventDefault();
                 const formData = new FormData(editForm);

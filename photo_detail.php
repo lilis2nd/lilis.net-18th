@@ -1,17 +1,14 @@
 <?php
+session_start();
 // photo_detail.php
 require 'vendor/autoload.php';
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
+require_once 'db_connect.php';
 
 $photo_id = $_GET['id'] ?? null;
 $photo = null;
 
 if ($photo_id) {
     try {
-        $dsn = "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']};charset=utf8mb4";
-        $pdo = new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        
         $stmt = $pdo->prepare("SELECT * FROM photos WHERE id = ?");
         $stmt->execute([$photo_id]);
         $photo = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -25,96 +22,227 @@ if (!$photo) {
     echo "<script>alert('존재하지 않는 사진입니다.'); location.href='photos.php';</script>";
     exit;
 }
+
+// DB에서 좋아요 값이 NULL이면 0으로 처리
+$like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
 ?>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?> - Lilis</title>
+    <title><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?> - Skyremix Studio</title>
+    
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?> - Skyremix Studio">
+    <meta property="og:description" content="Skyremix Studio에 업로드된 작품입니다. 클릭해서 감상해 보세요.">
+    <meta property="og:image" content="<?= htmlspecialchars($photo['s3_url'], ENT_QUOTES, 'UTF-8') ?>">
+    <meta property="og:url" content="https://lilis.net/photo_detail?id=<?= $photo['id'] ?>">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    
+    <style>
+        /* 하트 버튼 애니메이션 */
+        .btn-like {
+            border: 2px solid #ff4757;
+            color: #ff4757;
+            background-color: transparent;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            font-family: 'Azeret Mono', monospace;
+        }
+        .btn-like:hover {
+            background-color: #ffeff0;
+            color: #ff4757;
+        }
+        .btn-like.liked {
+            background-color: #ff4757;
+            color: #fff;
+            border-color: #ff4757;
+        }
+        /* 클릭할 때 뿅! 하는 효과 */
+        .btn-like:active {
+            transform: scale(0.9);
+        }
+        .heart-icon {
+            display: inline-block;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-like.liked .heart-icon {
+            transform: scale(1.2);
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
-    </nav>
+<div class="content-wrapper" style="min-height: 100vh; display: flex; flex-direction: column;">
+    <?php include 'navbar.php'; ?>
 
-<main class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <a href="photos.php" class="btn btn-outline-secondary mb-4">&larr; 갤러리로 돌아가기</a>
-            
-            <img src="<?= htmlspecialchars($photo['s3_url'], ENT_QUOTES, 'UTF-8') ?>" 
-                 class="detail-photo-img shadow" 
-                 alt="<?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?>">
-            
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?></h2>
-                <button class="btn btn-sm btn-danger">삭제</button>
-            </div>
-
-            <div class="metadata-box mb-5">
-                <div class="row">
-                    <div class="col-md-4 metadata-item">
-                        <?php if (!empty($photo['taken_at'])): ?>
-                            <strong>촬영일:</strong> <?= date('Y-m-d H:i', strtotime($photo['taken_at'])) ?>
-                        <?php else: ?>
-                            <strong>업로드:</strong> <?= date('Y-m-d H:i', strtotime($photo['uploaded_at'])) ?>
-                        <?php endif; ?>
-                    </div>
-                    <div class="col-md-4 metadata-item">
-                        <strong>카메라:</strong> <?= htmlspecialchars($photo['camera_model'], ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                    <div class="col-md-4 metadata-item">
-                        <strong>조리개:</strong> f/<?= htmlspecialchars($photo['aperture'], ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                    <div class="col-md-4 metadata-item">
-                        <strong>셔터스피드:</strong> <?= htmlspecialchars($photo['shutter_speed'], ENT_QUOTES, 'UTF-8') ?>s
-                    </div>
-                    <div class="col-md-4 metadata-item">
-                        <strong>ISO:</strong> <?= htmlspecialchars($photo['iso'], ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                    <div class="col-md-4 metadata-item">
-                        <strong>초점거리:</strong> <?= htmlspecialchars($photo['focal_length'], ENT_QUOTES, 'UTF-8') ?>mm
-                    </div>
-                </div>
-            </div>
-
-            <hr>
-
-            <div class="mt-5">
-                <h4 style="color: var(--text-main); margin-bottom: 1.5rem;">Comments</h4>
+    <main class="container my-5 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <a href="photos" class="btn btn-outline-secondary mb-4">&larr; 갤러리로 돌아가기</a>
                 
-                <div class="card mb-3 border-0" style="background-color: #fff;">
-                    <div class="card-body">
-                        <h6 class="fw-bold" style="color: var(--text-main);">Visitor123 <span class="text-muted small fw-normal ms-2">2026-05-27 10:00</span></h6>
-                        <p class="card-text">사진 구도가 너무 아름답네요!</p>
+                <div class="text-center mb-4">
+                    <img src="<?= htmlspecialchars($photo['s3_url'], ENT_QUOTES, 'UTF-8') ?>" 
+                         class="img-fluid rounded shadow" 
+                         alt="<?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?>"
+                         style="max-height: 75vh; object-fit: contain; width: auto;">
+                </div>
+                
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-3 mt-4 gap-3">
+                    <h2 class="m-0" style="color: var(--text-main); font-weight: 700;"><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+                    
+                    <button id="likeBtn" class="btn btn-like rounded-pill px-4 shadow-sm" data-id="<?= $photo['id'] ?>">
+                        <span class="heart-icon me-1">♡</span> 
+                        <span id="likeCount"><?= $like_count ?></span>
+                    </button>
+                </div>
+
+                <div class="metadata-box mb-5 mt-4">
+                    <div class="row">
+                        <div class="col-md-4 metadata-item">
+                            <?php if (!empty($photo['taken_at'])): ?>
+                                <strong>촬영일:</strong> <?= date('Y-m-d H:i', strtotime($photo['taken_at'])) ?>
+                            <?php else: ?>
+                                <strong>업로드:</strong> <?= date('Y-m-d H:i', strtotime($photo['uploaded_at'])) ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-4 metadata-item">
+                            <strong>카메라:</strong> <?= htmlspecialchars($photo['camera_model'], ENT_QUOTES, 'UTF-8') ?: '-' ?>
+                        </div>
+                        <div class="col-md-4 metadata-item">
+                            <strong>조리개:</strong> <?= $photo['aperture'] ? htmlspecialchars($photo['aperture'], ENT_QUOTES, 'UTF-8') : '-' ?>
+                        </div>
+                        <div class="col-md-4 metadata-item">
+                            <strong>셔터스피드:</strong> <?= $photo['shutter_speed'] ? htmlspecialchars($photo['shutter_speed'], ENT_QUOTES, 'UTF-8') . 's' : '-' ?>
+                        </div>
+                        <div class="col-md-4 metadata-item">
+                            <strong>ISO:</strong> <?= htmlspecialchars($photo['iso'], ENT_QUOTES, 'UTF-8') ?: '-' ?>
+                        </div>
+                        <div class="col-md-4 metadata-item">
+                            <strong>초점거리:</strong> <?= $photo['focal_length'] ? round(floatval($photo['focal_length']), 1) . 'mm' : '-' ?>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card border-0 mt-4" style="background-color: #fff;">
-                    <div class="card-body">
-                        <form action="comment_process.php" method="POST">
-                            <input type="hidden" name="photo_id" value="<?= $photo['id'] ?>">
-                            <div class="mb-3">
-                                <input type="text" class="form-control" name="author" placeholder="이름을 입력하세요" required>
+                <hr>
+
+                <div class="mt-5">
+                    <h4 style="color: var(--text-main); margin-bottom: 1.5rem; font-weight: 700;">Comments</h4>
+                    
+                    <?php
+                    $stmt_comments = $pdo->prepare("SELECT * FROM comments WHERE photo_id = ? ORDER BY created_at ASC");
+                    $stmt_comments->execute([$photo_id]);
+                    $comments = $stmt_comments->fetchAll(PDO::FETCH_ASSOC);
+                    ?>
+
+                    <?php if (empty($comments)): ?>
+                        <p class="text-muted mb-4 px-2" style="font-size: 0.95rem;">아직 작성된 댓글이 없습니다. 첫 번째 감상평을 남겨주세요!</p>
+                    <?php else: ?>
+                        <?php foreach ($comments as $comment): ?>
+                            <div class="card mb-3 border-0" style="background-color: #fff; box-shadow: var(--shadow-subtle); border-radius: 12px;">
+                                <div class="card-body p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="fw-bold m-0" style="color: var(--text-main);">
+                                            <?= htmlspecialchars($comment['author'], ENT_QUOTES, 'UTF-8') ?>
+                                            <span class="text-muted small fw-normal ms-2"><?= date('Y-m-d H:i', strtotime($comment['created_at'])) ?></span>
+                                        </h6>
+                                        
+                                        <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
+                                            <form action="comment_delete.php" method="POST" onsubmit="return confirm('이 댓글을 정말 삭제하시겠습니까?');" style="margin: 0;">
+                                                <input type="hidden" name="comment_id" value="<?= $comment['id'] ?>">
+                                                <input type="hidden" name="photo_id" value="<?= $photo['id'] ?>">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size: 0.75rem; border-radius: 20px;">삭제</button>
+                                            </form>
+                                        <?php endif; ?>
+                                    </div>
+                                    <p class="card-text mb-0 text-secondary" style="font-size: 0.95rem; line-height: 1.6;">
+                                        <?= nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8')) ?>
+                                    </p>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <textarea class="form-control" name="content" rows="3" placeholder="댓글을 남겨주세요" required></textarea>
-                            </div>
-                            <div class="text-end">
-                                <button type="submit" class="btn btn-dark">댓글 등록</button>
-                            </div>
-                        </form>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <div class="card border-0 mt-4" style="background-color: transparent;">
+                        <div class="card-body p-0">
+                            <form action="comment_process.php" method="POST">
+                                <input type="hidden" name="photo_id" value="<?= $photo['id'] ?>">
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" name="author" placeholder="이름 (닉네임)" required style="max-width: 250px;">
+                                </div>
+                                <div class="mb-3">
+                                    <textarea class="form-control" name="content" rows="3" placeholder="사진에 대한 감상을 남겨주세요." required></textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-dark rounded-pill px-4" style="font-weight: 600;">댓글 등록</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
+
             </div>
-
         </div>
-    </div>
-</main>
+    </main>
+
+    <?php include 'footer.php'; ?>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeCountSpan = document.getElementById('likeCount');
+    const heartIcon = document.querySelector('.heart-icon');
+    const photoId = likeBtn.getAttribute('data-id');
+    const storageKey = 'liked_photo_' + photoId;
+
+    // 페이지 로드 시 이미 누른 적이 있는지 확인 (브라우저 LocalStorage 확인)
+    if (localStorage.getItem(storageKey) === 'true') {
+        likeBtn.classList.add('liked');
+        heartIcon.textContent = '♥';
+    }
+
+    likeBtn.addEventListener('click', function() {
+        // 이미 누른 경우 클릭 무시 (어뷰징 방지)
+        if (localStorage.getItem(storageKey) === 'true') {
+            alert('이미 좋아요를 누르신 작품입니다. 감사합니다! 😊');
+            return;
+        }
+
+        // 백엔드(like_process.php)로 비동기 POST 전송
+        fetch('like_process.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ photo_id: photoId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 숫자 업데이트
+                likeCountSpan.textContent = data.likes;
+                // 버튼 스타일 변경 (빨간색으로 채우기)
+                likeBtn.classList.add('liked');
+                heartIcon.textContent = '♥';
+                // 브라우저에 "나 이거 좋아요 눌렀음" 기록 남기기
+                localStorage.setItem(storageKey, 'true');
+            } else {
+                alert('오류가 발생했습니다: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('네트워크 오류가 발생했습니다.');
+        });
+    });
+});
+</script>
+
 </body>
 </html>

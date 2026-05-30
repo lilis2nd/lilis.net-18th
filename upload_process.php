@@ -79,12 +79,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['photo'])) {
     // S3 업로드 시 사용할 기본 MIME 타입 설정
     $mimeType = mime_content_type($tmpPath);
 
-    // S3 업로드 시 사용할 기본 MIME 타입 설정
-    $mimeType = mime_content_type($tmpPath);
-
     // --- [새 기능] 이미지 용량 최적화(WebP, 리사이징) 및 워터마크 로직 시작 ---
     try {
         $image = new Imagick($tmpPath);
+        
+        // ✅ [추가] EXIF 정보를 읽어 세로/가로 방향을 자동으로 똑바로 맞춰줍니다.
+        $image->autoOrient();
         
         // 1. 가로폭 2560px 리사이징 (종횡비 유지)
         $maxWidth = 2560;
