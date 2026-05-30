@@ -1,12 +1,19 @@
+# 💡 1. 숨김 파일(.env, .git, .htaccess 등) 웹 접근 원천 차단 (보안)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# 💡 2. 404 에러 발생 시 감성적인 커스텀 페이지로 연결
 ErrorDocument 404 /404.php
 
 RewriteEngine On
 
-# 1. 들어온 요청이 실제 디렉토리가 아닐 경우
+# 💡 3. PHP 확장자 숨기기 (Clean URL)
+# 들어온 요청이 실제 디렉토리가 아닐 경우
 RewriteCond %{REQUEST_FILENAME} !-d
-# 2. 💡 [추가된 핵심 코드] 뒤에 .php를 붙였을 때 그 파일이 실제로 존재하는 경우에만!
+# 뒤에 .php를 붙였을 때 그 파일이 실제로 존재하는 경우에만!
 RewriteCond %{REQUEST_FILENAME}.php -f
-# 3. .php를 내부적으로 붙여서 실행
+# .php를 내부적으로 붙여서 실행
 RewriteRule ^(.*)$ $1.php [NC,L]
 
 

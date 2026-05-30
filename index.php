@@ -21,9 +21,7 @@ try {
     <meta property="og:title" content="Skyremix Studio">
     <meta property="og:description" content="두 개의 시선, 하나의 기록. Lilis의 사진 갤러리 및 웹 포트폴리오입니다.">
     <meta property="og:image" content="https://lilis.net/og-image.jpg"> <meta property="og:url" content="https://lilis.net">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    <?php include 'common_head.php'; ?>
     <style>
         /* 푸터 바닥 고정을 위한 레이아웃 설정 */
         html, body {

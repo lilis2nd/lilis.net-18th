@@ -4,6 +4,16 @@ require_once 'db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $photo_id = isset($_POST['photo_id']) ? (int)$_POST['photo_id'] : 0;
+    
+    // 💡 [핵심] 허니팟 체크 로직
+    // 정상적인 사람이라면 화면에 안 보이니 이 칸을 비워뒀을 것입니다.
+    // 만약 여기에 무언가 적혀있다면 100% 자동화된 스팸 봇입니다.
+    if (!empty($_POST['url_website_check'])) {
+        // 봇이 눈치채지 못하도록 에러 메시지 없이 조용히 갤러리 밖으로 내쫓습니다.
+        header("Location: photos");
+        exit;
+    }
+
     $author = trim($_POST['author']);
     $content = trim($_POST['content']);
 

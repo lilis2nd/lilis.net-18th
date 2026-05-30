@@ -26,8 +26,16 @@ try {
     $totalPhotos = $totalStmt->fetchColumn();
     $totalPages = ceil($totalPhotos / $limit);
 
-    // 5. 사진 목록 가져오기
-    $selectSql = "SELECT * FROM photos $whereClause ORDER BY uploaded_at DESC LIMIT :limit OFFSET :offset";
+    // 5. 사진 목록 + 각 사진의 '댓글 수(comment_count)' 가져오기
+    $selectSql = "
+        SELECT p.*, 
+               (SELECT COUNT(*) FROM comments c WHERE c.photo_id = p.id) AS comment_count 
+        FROM photos p 
+        $whereClause 
+        ORDER BY p.uploaded_at DESC 
+        LIMIT :limit OFFSET :offset
+    ";
+    
     $stmt = $pdo->prepare($selectSql);
     if ($currentCategory !== 'All') {
         $stmt->bindValue(':category', $currentCategory);
@@ -53,9 +61,7 @@ try {
     <meta property="og:description" content="두 개의 시선, 하나의 기록. Lilis의 사진 갤러리 및 웹 포트폴리오입니다.">
     <meta property="og:image" content="https://lilis.net/og-image.jpg">
     <meta property="og:url" content="https://lilis.net/photos">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
+    <?php include 'common_head.php'; ?>
     <style>
         html, body { height: 100%; margin: 0; }
         body { display: flex; flex-direction: column; }
@@ -68,7 +74,6 @@ try {
             cursor: zoom-in; background-color: #000;
         }
 
-        /* 💡 1. Skeleton UI 애니메이션 배경 설정 */
         .photo-container.skeleton {
             background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--accent) 50%, var(--bg-secondary) 75%);
             background-size: 200% 100%;
@@ -79,16 +84,12 @@ try {
             100% { background-position: -200% 0; }
         }
 
-        /* 💡 2. 이미지는 처음엔 투명(opacity: 0)하게 숨겨둠 */
         .photo-img { 
             width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover; 
             opacity: 0; 
             transition: opacity 0.8s ease-out, transform 0.5s ease; 
         }
-        /* 💡 3. 로딩이 끝나면 투명도를 1로 올려서 스르륵 나타나게 함 */
-        .photo-img.loaded { 
-            opacity: 1; 
-        }
+        .photo-img.loaded { opacity: 1; }
         
         .photo-container:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px rgba(13, 43, 91, 0.15); }
         .photo-container:hover .photo-img { transform: scale(1.1); }
@@ -108,7 +109,11 @@ try {
         .photo-container:hover .subtle-delete-btn, .photo-container:hover .subtle-edit-btn { opacity: 1; }
         
         .modal-backdrop.show { opacity: 0.95; }
-        .lightbox-exif { font-size: 0.85rem; color: #ccc; margin-top: 5px; letter-spacing: 0.5px; }
+        .lightbox-exif { font-size: 0.85rem; color: #ccc; letter-spacing: 0.5px; }
+        
+        .lightbox-stats { font-family: 'Azeret Mono', monospace; font-size: 0.95rem; color: #ffeb3b; }
+        .lightbox-stats .stat-item { display: inline-flex; align-items: center; gap: 6px; }
+        .lightbox-stats .stat-icon { opacity: 0.8; font-size: 1.05rem; }
         
         .lightbox-nav-btn {
             position: absolute; top: 50%; transform: translateY(-50%);
@@ -120,9 +125,7 @@ try {
         .lightbox-prev { left: 10px; }
         .lightbox-next { right: 10px; }
         
-        @media (max-width: 768px) {
-            .lightbox-nav-btn { display: none; }
-        }
+        @media (max-width: 768px) { .lightbox-nav-btn { display: none; } }
     </style>
 </head>
 <body>
@@ -171,7 +174,6 @@ try {
                             } else {
                                 $exifDetails[] = "📅 " . date('Y.m.d', strtotime($photo['uploaded_at']));
                             }
-                            
                             $exifString = implode('   |   ', $exifDetails);
                         ?>
                         <div class="photo-container skeleton" 
@@ -184,7 +186,10 @@ try {
                              data-iso="<?= htmlspecialchars($photo['iso']) ?>"
                              data-focal="<?= htmlspecialchars($photo['focal_length']) ?>"
                              data-exif="<?= htmlspecialchars($exifString) ?>"
-                             data-category="<?= htmlspecialchars($photo['category'] ?? 'General') ?>">
+                             data-category="<?= htmlspecialchars($photo['category'] ?? 'General') ?>"
+                             data-likes="<?= $photo['likes'] ? (int)$photo['likes'] : 0 ?>"
+                             data-views="<?= $photo['views'] ? (int)$photo['views'] : 0 ?>"
+                             data-comments="<?= (int)$photo['comment_count'] ?>">
                             
                             <?php if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true): ?>
                                 <button type="button" class="btn btn-dark btn-sm rounded-pill subtle-edit-btn edit-action-trigger">⚙️ 수정</button>
@@ -218,21 +223,12 @@ try {
         </div>
 
         <?php if ($totalPages > 1): ?>
-            <nav aria-label="Page navigation" class="mt-5 pt-3">
-                <ul class="pagination pagination-sm justify-content-center">
-                    <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page - 1 ?>" style="color: var(--text-main);">이전</a>
-                    </li>
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <li class="page-item <?= ($page == $i) ? 'active' : '' ?>">
-                            <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $i ?>" style="<?= ($page == $i) ? 'background-color: var(--text-main); border-color: var(--text-main);' : 'color: var(--text-main);' ?>"><?= $i ?></a>
-                        </li>
-                    <?php endfor; ?>
-                    <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                        <a class="page-link" href="?cat=<?= urlencode($currentCategory) ?>&page=<?= $page + 1 ?>" style="color: var(--text-main);">다음</a>
-                    </li>
-                </ul>
-            </nav>
+            <div id="scrollTrigger" style="height: 20px; width: 100%; margin-top: 20px;"></div>
+            <div id="loadingSpinner" class="text-center py-4 d-none">
+                <div class="spinner-border text-secondary" role="status" style="width: 2.5rem; height: 2.5rem; border-width: 0.25rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
         <?php endif; ?>
     </div>
 </div>
@@ -247,8 +243,16 @@ try {
         <button id="lightboxPrevBtn" class="lightbox-nav-btn lightbox-prev">&#10094;</button>
         <button id="lightboxNextBtn" class="lightbox-nav-btn lightbox-next">&#10095;</button>
         <img src="" id="lightboxImage" class="img-fluid rounded shadow" alt="Enlarged Photo" style="max-height: 80vh; object-fit: contain;">
+        
         <div class="mt-3">
-            <div id="lightboxCaption" class="text-white fw-bold fs-5"></div>
+            <div id="lightboxCaption" class="text-white fw-bold fs-5 mb-1"></div>
+            
+            <div class="d-flex justify-content-center gap-4 mb-2 lightbox-stats">
+                <span class="stat-item" title="Views"><span class="stat-icon">👁️</span> <span id="lbViews">0</span></span>
+                <span class="stat-item" title="Likes"><span class="stat-icon">❤️</span> <span id="lbLikes">0</span></span>
+                <span class="stat-item" title="Comments"><span class="stat-icon">💬</span> <span id="lbComments">0</span></span>
+            </div>
+            
             <div id="lightboxExif" class="lightbox-exif mb-2"></div>
             <a href="#" id="lightboxDetailLink" class="btn btn-sm btn-outline-light rounded-pill px-3 mt-2" style="font-family: 'Azeret Mono', monospace; font-size: 0.85rem;">
                 View Details & Comments &rarr;
@@ -274,7 +278,6 @@ try {
                 <label for="editTitle" class="form-label fw-bold">사진 제목</label>
                 <input type="text" class="form-control" id="editTitle" name="title" required>
             </div>
-            
             <div class="mb-3">
                 <label for="editCategory" class="form-label fw-bold text-primary">카테고리</label>
                 <select class="form-select" id="editCategory" name="category">
@@ -291,11 +294,11 @@ try {
             </div>
             <div class="row">
                 <div class="col-6 mb-3">
-                    <label for="editAperture" class="form-label text-muted">조리개 (예: f/2.8)</label>
+                    <label for="editAperture" class="form-label text-muted">조리개</label>
                     <input type="text" class="form-control" id="editAperture" name="aperture">
                 </div>
                 <div class="col-6 mb-3">
-                    <label for="editShutter" class="form-label text-muted">셔터 스피드 (예: 1/40)</label>
+                    <label for="editShutter" class="form-label text-muted">셔터 스피드</label>
                     <input type="text" class="form-control" id="editShutter" name="shutter_speed">
                 </div>
             </div>
@@ -305,7 +308,7 @@ try {
                     <input type="text" class="form-control" id="editIso" name="iso">
                 </div>
                 <div class="col-6 mb-3">
-                    <label for="editFocal" class="form-label text-muted">초점거리 (숫자만, 예: 16.9)</label>
+                    <label for="editFocal" class="form-label text-muted">초점거리</label>
                     <input type="text" class="form-control" id="editFocal" name="focal_length">
                 </div>
             </div>
@@ -321,9 +324,9 @@ try {
 <?php endif; ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const photoContainers = Array.from(document.querySelectorAll('.photo-container'));
         const lightboxModalEl = document.getElementById('lightboxModal');
         const lightboxModal = new bootstrap.Modal(lightboxModalEl);
         
@@ -331,7 +334,11 @@ try {
         const lightboxCaption = document.getElementById('lightboxCaption');
         const lightboxExif = document.getElementById('lightboxExif');
         const lightboxDetailLink = document.getElementById('lightboxDetailLink');
+        const lbViews = document.getElementById('lbViews');
+        const lbLikes = document.getElementById('lbLikes');
+        const lbComments = document.getElementById('lbComments');
         
+        let photoContainersArray = [];
         let currentIndex = 0;
         let isModalOpen = false;
 
@@ -339,35 +346,97 @@ try {
         lightboxModalEl.addEventListener('hidden.bs.modal', () => isModalOpen = false);
 
         function updateLightbox(index) {
-            if (index < 0) index = photoContainers.length - 1;
-            if (index >= photoContainers.length) index = 0;
+            if (index < 0) index = photoContainersArray.length - 1;
+            if (index >= photoContainersArray.length) index = 0;
             currentIndex = index;
 
-            const container = photoContainers[currentIndex];
+            const container = photoContainersArray[currentIndex];
+            const photoId = container.getAttribute('data-id');
+            
             lightboxImage.src = container.getAttribute('data-img');
             lightboxCaption.textContent = container.getAttribute('data-title');
             lightboxExif.textContent = container.getAttribute('data-exif');
+            lightboxDetailLink.href = 'photo_detail?id=' + photoId;
             
-            lightboxDetailLink.href = 'photo_detail?id=' + container.getAttribute('data-id');
+            lbLikes.textContent = container.getAttribute('data-likes');
+            lbComments.textContent = container.getAttribute('data-comments');
+            
+            const viewKey = 'viewed_photo_' + photoId;
+            let currentViews = parseInt(container.getAttribute('data-views')) || 0;
+            
+            if (!sessionStorage.getItem(viewKey)) {
+                fetch('view_process.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photo_id: photoId })
+                });
+                sessionStorage.setItem(viewKey, 'true');
+                currentViews++;
+                container.setAttribute('data-views', currentViews);
+            }
+            lbViews.textContent = currentViews;
         }
 
-        photoContainers.forEach((container, index) => {
-            container.addEventListener('click', function(e) {
-                if(e.target.closest('.delete-form') || e.target.closest('.edit-action-trigger')) return;
-                updateLightbox(index);
-                lightboxModal.show();
+        const editModalEl = document.getElementById('editModal');
+        let editModal = null;
+        if (editModalEl) {
+            editModal = new bootstrap.Modal(editModalEl);
+            const editForm = document.getElementById('editForm');
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(editForm);
+                fetch('edit_process.php', { method: 'POST', body: formData })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) { alert('성공적으로 수정되었습니다.'); location.reload(); }
+                    else { alert('수정 실패: ' + data.message); }
+                });
             });
-        });
+        }
 
+        // 💡 새 사진이 로드될 때마다 이벤트를 걸어주는 함수
+        function bindEventsToContainers(containers) {
+            containers.forEach(container => {
+                const index = photoContainersArray.length;
+                photoContainersArray.push(container);
+                
+                container.addEventListener('click', function(e) {
+                    if(e.target.closest('.delete-form') || e.target.closest('.edit-action-trigger')) return;
+                    updateLightbox(index);
+                    lightboxModal.show();
+                });
+
+                if (editModalEl) {
+                    const editBtn = container.querySelector('.edit-action-trigger');
+                    if (editBtn) {
+                        editBtn.addEventListener('click', function() {
+                            document.getElementById('editPhotoId').value = container.getAttribute('data-id');
+                            document.getElementById('editTitle').value = container.getAttribute('data-title');
+                            document.getElementById('editCamera').value = container.getAttribute('data-camera');
+                            document.getElementById('editAperture').value = container.getAttribute('data-aperture');
+                            document.getElementById('editShutter').value = container.getAttribute('data-shutter');
+                            document.getElementById('editIso').value = container.getAttribute('data-iso');
+                            document.getElementById('editFocal').value = container.getAttribute('data-focal');
+                            editModal.show();
+                        });
+                    }
+                }
+            });
+        }
+
+        // 1. 초기 렌더링된 사진들 바인딩
+        bindEventsToContainers(Array.from(document.querySelectorAll('.photo-container')));
+
+        // 2. 라이트박스 네비게이션 키/스와이프 동작
         document.getElementById('lightboxPrevBtn').addEventListener('click', () => updateLightbox(currentIndex - 1));
         document.getElementById('lightboxNextBtn').addEventListener('click', () => updateLightbox(currentIndex + 1));
-
+        
         document.addEventListener('keydown', function(e) {
             if (!isModalOpen) return;
             if (e.key === 'ArrowLeft') updateLightbox(currentIndex - 1);
             if (e.key === 'ArrowRight') updateLightbox(currentIndex + 1);
         });
-
+        
         let touchstartX = 0; let touchendX = 0;
         lightboxModalEl.addEventListener('touchstart', e => touchstartX = e.changedTouches[0].screenX);
         lightboxModalEl.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleSwipe(); });
@@ -377,48 +446,65 @@ try {
             if (touchendX - touchstartX > threshold) updateLightbox(currentIndex - 1);
         }
 
-        const editModalEl = document.getElementById('editModal');
-        if (editModalEl) {
-            const editModal = new bootstrap.Modal(editModalEl);
-            const editForm = document.getElementById('editForm');
+        // 3. 💡 무한 스크롤(Infinite Scroll) 로직
+        const galleryGrid = document.querySelector('.gallery-grid');
+        const scrollTrigger = document.getElementById('scrollTrigger');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        let currentPage = 1;
+        let currentCategory = new URLSearchParams(window.location.search).get('cat') || 'All';
+        let isLoading = false;
+        let hasMorePhotos = scrollTrigger ? true : false;
 
-            document.querySelectorAll('.edit-action-trigger').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const container = this.closest('.photo-container');
+        if (scrollTrigger) {
+            // 화면 바닥에 닿기 300px 전부터 미리 로드 시작
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting && !isLoading && hasMorePhotos) {
+                    loadMorePhotos();
+                }
+            }, { rootMargin: "300px" }); 
+            
+            observer.observe(scrollTrigger);
+        }
+
+        function loadMorePhotos() {
+            isLoading = true;
+            loadingSpinner.classList.remove('d-none');
+            currentPage++;
+
+            fetch(`fetch_photos.php?cat=${encodeURIComponent(currentCategory)}&page=${currentPage}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.html.trim() !== '') {
+                    // 서버에서 받은 HTML을 텍스트가 아닌 실제 요소(DOM)로 변환
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const newCols = Array.from(tempDiv.children);
                     
-                    document.getElementById('editPhotoId').value = container.getAttribute('data-id');
-                    document.getElementById('editTitle').value = container.getAttribute('data-title');
-                    document.getElementById('editCamera').value = container.getAttribute('data-camera');
-                    document.getElementById('editAperture').value = container.getAttribute('data-aperture');
-                    document.getElementById('editShutter').value = container.getAttribute('data-shutter');
-                    document.getElementById('editIso').value = container.getAttribute('data-iso');
-                    document.getElementById('editFocal').value = container.getAttribute('data-focal');
+                    const newContainers = [];
+                    newCols.forEach(col => {
+                        galleryGrid.appendChild(col);
+                        newContainers.push(col.querySelector('.photo-container'));
+                    });
                     
-                    editModal.show();
-                });
-            });
-
-            editForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const formData = new FormData(editForm);
-
-                fetch('edit_process.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('사진 정보가 성공적으로 수정되었습니다.');
-                        location.reload(); 
-                    } else {
-                        alert('수정 실패: ' + data.message);
+                    // 새로 붙은 사진들에 라이트박스 및 스크립트 연결
+                    bindEventsToContainers(newContainers);
+                    
+                    hasMorePhotos = data.has_more;
+                    
+                    // 더 이상 불러올 사진이 없다면 스크롤 감지기 삭제
+                    if (!hasMorePhotos && scrollTrigger) {
+                        scrollTrigger.remove(); 
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('서버 통신 중 오류가 발생했습니다.');
-                });
+                } else {
+                    hasMorePhotos = false;
+                    if (scrollTrigger) scrollTrigger.remove();
+                }
+            })
+            .catch(err => console.error('Fetch error:', err))
+            .finally(() => {
+                isLoading = false;
+                loadingSpinner.classList.add('d-none');
             });
         }
     });

@@ -1,5 +1,6 @@
 <?php
 // db_connect.php
+date_default_timezone_set('Asia/Seoul');
 
 // 1. Composer 오토로더 및 phpdotenv 로드
 require_once __DIR__ . '/vendor/autoload.php';

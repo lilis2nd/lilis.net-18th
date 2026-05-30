@@ -23,6 +23,15 @@ if (!$photo) {
     exit;
 }
 
+// 💡 [추가] 이전/다음 사진 ID 가져오기
+$stmt_prev = $pdo->prepare("SELECT id FROM photos WHERE id > ? ORDER BY id ASC LIMIT 1");
+$stmt_prev->execute([$photo_id]);
+$prev_photo = $stmt_prev->fetch(PDO::FETCH_ASSOC);
+
+$stmt_next = $pdo->prepare("SELECT id FROM photos WHERE id < ? ORDER BY id DESC LIMIT 1");
+$stmt_next->execute([$photo_id]);
+$next_photo = $stmt_next->fetch(PDO::FETCH_ASSOC);
+
 // DB에서 좋아요 값이 NULL이면 0으로 처리
 $like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
 ?>
@@ -38,9 +47,7 @@ $like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
     <meta property="og:description" content="Skyremix Studio에 업로드된 작품입니다. 클릭해서 감상해 보세요.">
     <meta property="og:image" content="<?= htmlspecialchars($photo['s3_url'], ENT_QUOTES, 'UTF-8') ?>">
     <meta property="og:url" content="https://lilis.net/photo_detail?id=<?= $photo['id'] ?>">
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <?php include 'common_head.php'; ?>
     
     <style>
         /* 하트 버튼 애니메이션 */
@@ -82,7 +89,15 @@ $like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
     <main class="container my-5 flex-grow-1">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
-                <a href="photos" class="btn btn-outline-secondary mb-4">&larr; 갤러리로 돌아가기</a>
+                
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center mb-4 gap-3">
+                    <a href="photos" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm" style="font-weight: 600;">&larr; Gallery</a>
+                    
+                    <div class="btn-group shadow-sm" style="border-radius: 50px;">
+                        <a href="<?= $prev_photo ? 'photo_detail?id='.$prev_photo['id'] : '#' ?>" class="btn btn-outline-dark px-4 <?= $prev_photo ? '' : 'disabled' ?>" style="border-top-left-radius: 50px; border-bottom-left-radius: 50px; font-weight: 600;">&larr; Prev</a>
+                        <a href="<?= $next_photo ? 'photo_detail?id='.$next_photo['id'] : '#' ?>" class="btn btn-outline-dark px-4 <?= $next_photo ? '' : 'disabled' ?>" style="border-top-right-radius: 50px; border-bottom-right-radius: 50px; font-weight: 600;">Next &rarr;</a>
+                    </div>
+                </div>
                 
                 <div class="text-center mb-4">
                     <img src="<?= htmlspecialchars($photo['s3_url'], ENT_QUOTES, 'UTF-8') ?>" 
@@ -170,6 +185,10 @@ $like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
                         <div class="card-body p-0">
                             <form action="comment_process.php" method="POST">
                                 <input type="hidden" name="photo_id" value="<?= $photo['id'] ?>">
+                                <div style="position: absolute; left: -9999px;" aria-hidden="true">
+                                    <label for="url_website_check">Website</label>
+                                    <input type="text" id="url_website_check" name="url_website_check" tabindex="-1" autocomplete="off">
+                                </div>
                                 <div class="mb-3">
                                     <input type="text" class="form-control" name="author" placeholder="이름 (닉네임)" required style="max-width: 250px;">
                                 </div>
