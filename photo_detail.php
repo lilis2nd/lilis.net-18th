@@ -108,11 +108,22 @@ $like_count = $photo['likes'] ? (int)$photo['likes'] : 0;
                 
                 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-3 mt-4 gap-3">
                     <h2 class="m-0" style="color: var(--text-main); font-weight: 700;"><?= htmlspecialchars($photo['title'], ENT_QUOTES, 'UTF-8') ?></h2>
-                    
-                    <button id="likeBtn" class="btn btn-like rounded-pill px-4 shadow-sm" data-id="<?= $photo['id'] ?>">
-                        <span class="heart-icon me-1">♡</span> 
-                        <span id="likeCount"><?= $like_count ?></span>
-                    </button>
+                    <div class="photo-actions">
+                        <button id="shareButton" class="share-btn" title="사진 공유하기">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </button>
+                        
+                        <button id="likeBtn" class="btn btn-like rounded-pill px-4 shadow-sm" data-id="<?= $photo['id'] ?>">
+                            <span class="heart-icon me-1">♡</span> 
+                            <span id="likeCount"><?= $like_count ?></span>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="metadata-box mb-5 mt-4">
@@ -261,7 +272,35 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
-</script>
 
+</script>
+<script>
+document.getElementById('shareButton').addEventListener('click', async () => {
+    // 공유할 데이터 설정
+    const shareData = {
+        title: '<?= addslashes($photo['title'] ?? '무제') ?> - Skyremix Studio',
+        text: 'Skyremix Studio에서 이 사진을 감상해보세요.',
+        url: window.location.href // 현재 페이지 주소
+    };
+
+    // 1. 모바일 환경 (Web Share API 지원 시)
+    if (navigator.share) {
+        try {
+            await navigator.share(shareData);
+        } catch (err) {
+            console.log('공유가 취소되었거나 에러가 발생했습니다.', err);
+        }
+    } 
+    // 2. PC 환경 (클립보드 복사 폴백)
+    else {
+        try {
+            await navigator.clipboard.writeText(shareData.url);
+            alert('🔗 사진 링크가 클립보드에 복사되었습니다!');
+        } catch (err) {
+            alert('주소 복사에 실패했습니다. 브라우저 주소창의 링크를 복사해주세요.');
+        }
+    }
+});
+</script>
 </body>
 </html>

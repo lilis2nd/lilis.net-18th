@@ -231,3 +231,47 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* 미니멀 공유 버튼 스타일 */
+.share-btn {
+    background: none;
+    border: none;
+    color: var(--text-main); /* 사이트 기본 텍스트 색상 사용 */
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+}
+
+.share-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    opacity: 1;
+}
+
+/* 다크 모드 대응 (필요시) */
+@media (prefers-color-scheme: dark) {
+    .share-btn:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* 좋아요 & 공유 버튼을 한 줄로 묶는 컨테이너 */
+.photo-actions {
+    display: flex;
+    align-items: center; /* 버튼들의 세로 중앙을 딱 맞춤 */
+    gap: 16px; /* 버튼 사이의 간격 (너무 좁지 않게) */
+    margin-top: 12px; /* 위쪽 여백 */
+    margin-bottom: 24px; /* 아래쪽 여백 */
+}
+
+/* 모바일 화면(768px 이하)일 때 버튼들을 우측으로 밀고 싶다면 아래 코드 사용 (선택사항) */
+@media (max-width: 768px) {
+    .photo-actions {
+        justify-content: flex-end; /* 우측 정렬 */
+        /* 좌측 정렬을 원하시면 flex-start, 중앙 정렬은 center로 바꾸시면 됩니다 */
+    }
+}
